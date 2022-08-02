@@ -1,38 +1,76 @@
-import React,{useState} from "react";
-const Test = ({data}) => {
-    const [state, setState] = useState({countries:data, selected: null, incorrect:[]});
+import React, { useState } from "react";
+const Test = ({ data }) => {
+  const shuffleArray = (countries) =>
+    Object.keys(countries)
+      .map((country) => ({ id: `country:${country}`, value: country }))
+      .concat(
+        Object.values(countries).map((capital) => ({
+          id: `capital:${capital}`,
+          value: capital,
+        }))
+      )
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
 
-    const handleClick = (e) => {
-        const [type, value] = e.target.id.split(':');
-        if(state.selected){
-            console.log(`Selected is ${state.selected}. Value is ${value}`);
-            const shouldMatch = type === 'country' ? state.countries[value] : Object.keys(state.countries).find(key => state.countries[key] === value);
-            console.log(`value ${value} should match ${shouldMatch}`);
-            if(shouldMatch === state.selected){
-                delete state.countries[type === 'country' ? value : Object.keys(state.countries).find(key => state.countries[key] === value)];
-                state.incorrect = [];
-            }
-            else{
-                state.incorrect.push(state.selected);
-                state.incorrect.push(value);
-            }
-            setState({...state, selected: null});
-        }else{
-            console.log(`Setting selected to ${value}`)
-            state.incorrect = [];
-            setState({...state, selected:value});
-        }
+  const [state, setState] = useState({
+    countries: data,
+    selected: null,
+    incorrect: [],
+    displayValues: shuffleArray(data),
+  });
+
+  const handleClick = (e) => {
+    const [type, value] = e.target.id.split(":");
+    if (state.selected) {
+      const shouldMatch =
+        type === "country"
+          ? state.countries[value]
+          : Object.keys(state.countries).find(
+              (key) => state.countries[key] === value
+            );
+      if (shouldMatch === state.selected) {
+        delete state.countries[
+          type === "country"
+            ? value
+            : Object.keys(state.countries).find(
+                (key) => state.countries[key] === value
+              )
+        ];
+        state.displayValues = shuffleArray(state.countries);
+        state.incorrect = [];
+      } else {
+        state.incorrect.push(state.selected);
+        state.incorrect.push(value);
+      }
+      setState({ ...state, selected: null });
+    } else {
+      state.incorrect = [];
+      setState({ ...state, selected: value });
     }
+  };
 
-    return (
-        <div>
-        {state.countries && <div>
-        {Object.keys(state.countries).map((country) => <button style={{backgroundColor: state.selected === country ? '#000fff': state.incorrect.includes(country) ? '#ff0000' : ''}} id={`country:${country}`} onClick={handleClick}>{country}</button>)}
-        {Object.values(state.countries).map((capital) => <button style={{backgroundColor: state.selected === capital ? '#000fff': state.incorrect.includes(capital) ? '#ff0000': ''}} id={`capital:${capital}`} onClick={handleClick}>{capital}</button>)}
-        </div>}
-        {!Object.keys(state.countries).length && <div>Congratulations!</div>}
-        </div>
-    );
-}
+  return (
+    <div>
+      {state.displayValues.map((v) => (
+        <button
+          style={{
+            backgroundColor:
+              state.selected === v.value
+                ? "#000fff"
+                : state.incorrect.includes(v.value)
+                ? "#ff0000"
+                : "",
+          }}
+          onClick={handleClick}
+          id={v.id}
+        >
+          {v.value}
+        </button>
+      ))}
+      {!Object.keys(state.countries).length && <div>Congratulations!</div>}
+    </div>
+  );
+};
 
 export default Test;
