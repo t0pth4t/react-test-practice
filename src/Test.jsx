@@ -22,32 +22,32 @@ const Test = ({ data }) => {
 
   const handleClick = (e) => {
     const [type, value] = e.target.id.split(":");
-    if (state.selected) {
-      const shouldMatch =
-        type === "country"
-          ? state.countries[value]
-          : Object.keys(state.countries).find(
-              (key) => state.countries[key] === value
-            );
-      if (shouldMatch === state.selected) {
-        delete state.countries[
-          type === "country"
-            ? value
-            : Object.keys(state.countries).find(
-                (key) => state.countries[key] === value
-              )
-        ];
-        state.displayValues = shuffleArray(state.countries);
-        state.incorrect = [];
-      } else {
-        state.incorrect.push(state.selected);
-        state.incorrect.push(value);
-      }
-      setState({ ...state, selected: null });
-    } else {
+    if (!state.selected) {
       state.incorrect = [];
       setState({ ...state, selected: value });
+      return;
     }
+    const shouldMatch =
+      type === "country"
+        ? state.countries[value]
+        : Object.keys(state.countries).find(
+            (key) => state.countries[key] === value
+          );
+    if (shouldMatch === state.selected) {
+      delete state.countries[
+        type === "country"
+          ? value
+          : Object.keys(state.countries).find(
+              (key) => state.countries[key] === value
+            )
+      ];
+      state.displayValues = shuffleArray(state.countries);
+      state.incorrect = [];
+    } else {
+      state.incorrect.push(state.selected);
+      state.incorrect.push(value);
+    }
+    setState({ ...state, selected: null });
   };
 
   return (
